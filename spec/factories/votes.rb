@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :vote do
-    user { nil }
-    votable { nil }
+    association user
+    votable { create(:post) }
   end
 end
