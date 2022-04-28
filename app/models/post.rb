@@ -7,6 +7,7 @@
 #  tagline        :string           not null
 #  title          :string           not null
 #  url            :string           not null
+#  votes_count    :integer          default(0)
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
 #  user_id        :bigint           not null
@@ -22,6 +23,7 @@
 class Post < ApplicationRecord
   belongs_to :user, required: true, inverse_of: :posts
   has_many :comments, dependent: :destroy, inverse_of: :post
+  has_many :votes, as: :votable, dependent: :destroy, inverse_of: :votable
 
   validates :title, :tagline, presence: true
   validates :url, url: true, presence: true
