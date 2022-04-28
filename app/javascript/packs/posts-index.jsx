@@ -15,8 +15,9 @@ const QUERY = gql`
       url
       commentsCount
       votesCount
-      isVoted
     }
+
+    viewerVotes
   }
 `;
 
@@ -55,7 +56,7 @@ function PostsIndex() {
 
   const handleUpandDownVote = (post) => {
     if(data.viewer){
-      post.isVoted ? downvote({variables: {postId: post.id}}) : upvote({variables: {postId: post.id}})
+      data.viewerVotes.includes(post.id) ? downvote({variables: {postId: post.id}}) : upvote({variables: {postId: post.id}})
     }else{
       navigateToLogin()
     }
@@ -77,7 +78,7 @@ function PostsIndex() {
               disabled={downvoteLoading || upvoteLoading}
               onClick={() => handleUpandDownVote(post)}
             >
-              { post.isVoted ? "🔽" : "🔼" } {post.votesCount}
+              { data.viewerVotes.includes(post.id) ? "🔽" : "🔼" } {post.votesCount}
             </button>
             <button>💬 {post.commentsCount}</button>
           </footer>
