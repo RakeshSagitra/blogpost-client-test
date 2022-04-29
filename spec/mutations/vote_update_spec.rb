@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe Mutations::VoteDelete do
+describe Mutations::VoteUpdate do
   let(:object) { :not_used }
   let(:user) { create :user, name: 'name' }
   let(:post) { create :post }
@@ -12,6 +12,17 @@ describe Mutations::VoteDelete do
       object: nil,
     )
     described_class.new(object: nil, context: context, field: nil).resolve(args)
+  end
+
+  context 'when post is not upvoted' do
+    it 'updates the current user' do
+      expect(post.votes_count).to eq 0
+
+      result = call(current_user: user, post_id: post.id)
+
+      expect(result).to eq post: post, errors: []
+      expect(post.reload.votes_count).to eq 1
+    end
   end
 
   context 'when post is upvoted' do
@@ -28,7 +39,6 @@ describe Mutations::VoteDelete do
       expect(post.reload.votes_count).to eq 0
     end
   end
-
 
   it 'requires a logged in user' do
     expect { call(current_user: nil, post_id: post.id) }.to raise_error GraphQL::ExecutionError, 'current user is missing'
