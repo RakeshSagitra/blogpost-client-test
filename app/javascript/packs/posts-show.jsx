@@ -32,18 +32,10 @@ query PostPage($postId: ID!) {
 }
 `;
 
-const UPVOTE = gql`
-  mutation voteCreate($postId: ID!) {
-    voteCreate(postId: $postId){
-      errors
-    }
-  }
-`;
 
-
-const DOWNVOTE = gql`
-  mutation voteDelete($postId: ID!) {
-    voteDelete(postId: $postId){
+const VOTE_UPDATE = gql`
+  mutation voteUpdate($postId: ID!) {
+    voteUpdate(postId: $postId){
       errors
     }
   }
@@ -53,11 +45,8 @@ function PostsShow({ postId }) {
   const { data, loading, error } = useQuery(QUERY, {
     variables: { postId },
   });
-  const [upvote, { loading: upvoteLoading }] = useMutation(UPVOTE, {
-    refetchQueries: [{query: QUERY, variables: {postId}}],
-  });
-  const [downvote, { loading: downvoteLoading }] = useMutation(DOWNVOTE, {
-    refetchQueries: [{query: QUERY, variables: {postId}}],
+  const [voteUpdate, { loading: voteLoading }] = useMutation(VOTE_UPDATE, {
+    refetchQueries: [{query: QUERY, variables: {postId: postId}}],
   });
 
   if (loading) return 'Loading...';
@@ -72,7 +61,7 @@ function PostsShow({ postId }) {
 
   const handleUpandDownVote = (post) => {
     if(data.viewer){
-      post.isVoted ? downvote({variables: {postId: post.id}}) : upvote({variables: {postId: post.id}})
+      voteUpdate({variables: {postId: post.id}})
     }else{
       navigateToLogin()
     }
@@ -96,7 +85,7 @@ function PostsShow({ postId }) {
           <div className="tagline">{post.tagline}</div>
           <footer>
             <button
-              disabled={downvoteLoading || upvoteLoading}
+              disabled={voteLoading}
               onClick={() => handleUpandDownVote(post)}
             >
               { post.isVoted ? "🔽" : "🔼" } {post.votesCount}

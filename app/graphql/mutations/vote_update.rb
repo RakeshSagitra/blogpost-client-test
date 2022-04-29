@@ -1,5 +1,5 @@
 module Mutations
-  class VoteCreate < Mutations::BaseMutation
+  class VoteUpdate < Mutations::BaseMutation
     null true
 
     argument :post_id, ID, required: true
@@ -12,8 +12,14 @@ module Mutations
 
       user = context[:current_user]
       post = Post.find(post_id)
-      vote = post.votes.build(user: user)
-      if vote.save
+      vote = post.votes.find_by(user: user)
+      if vote
+        vote.destroy
+      else
+        vote = post.votes.create(user: user)
+      end
+
+      unless vote.errors.any?
         {
           post: post,
           errors: [],

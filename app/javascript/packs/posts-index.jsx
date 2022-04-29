@@ -21,29 +21,18 @@ const QUERY = gql`
   }
 `;
 
-const UPVOTE = gql`
-  mutation voteCreate($postId: ID!) {
-    voteCreate(postId: $postId){
+const VOTE_UPDATE = gql`
+  mutation voteUpdate($postId: ID!) {
+    voteUpdate(postId: $postId){
       errors
     }
   }
 `;
 
-
-const DOWNVOTE = gql`
-  mutation voteDelete($postId: ID!) {
-    voteDelete(postId: $postId){
-      errors
-    }
-  }
-`;
 
 function PostsIndex() {
   const { data, loading, error } = useQuery(QUERY);
-  const [upvote, { loading: upvoteLoading }] = useMutation(UPVOTE, {
-    refetchQueries: [{query: QUERY}],
-  });
-  const [downvote, { loading: downvoteLoading }] = useMutation(DOWNVOTE, {
+  const [voteUpdate, { loading: voteLoading }] = useMutation(VOTE_UPDATE, {
     refetchQueries: [{query: QUERY}],
   });
 
@@ -56,7 +45,7 @@ function PostsIndex() {
 
   const handleUpandDownVote = (post) => {
     if(data.viewer){
-      data.viewerVotes.includes(post.id) ? downvote({variables: {postId: post.id}}) : upvote({variables: {postId: post.id}})
+      voteUpdate({variables: {postId: post.id}})
     }else{
       navigateToLogin()
     }
@@ -75,7 +64,7 @@ function PostsIndex() {
           <div className="tagline">{post.tagline}</div>
           <footer>
             <button
-              disabled={downvoteLoading || upvoteLoading}
+              disabled={voteLoading}
               onClick={() => handleUpandDownVote(post)}
             >
               { data.viewerVotes.includes(post.id) ? "🔽" : "🔼" } {post.votesCount}
