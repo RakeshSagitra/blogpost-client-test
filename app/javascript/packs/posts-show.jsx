@@ -1,52 +1,20 @@
-import gql from 'graphql-tag';
 import * as React from 'react';
 import { useMutation, useQuery } from 'react-apollo';
+import { COMMENT_CREATE, VOTE_UPDATE } from '../graphql/mutation';
+import { SHOW_POST_QUERY } from '../graphql/query';
 import renderComponent from './utils/renderComponent';
 
-const QUERY = gql`
-query PostPage($postId: ID!) {
-  viewer {
-    id
-  }
-
-  post(id: $postId) {
-    id
-    title
-    tagline
-    url
-    commentsCount
-    votesCount
-    isVoted
-    user {
-      name
-    }
-  }
-
-  comments(postId: $postId){
-    id
-    text
-    user{
-      name
-    }
-  }
-}
-`;
-
-
-const VOTE_UPDATE = gql`
-  mutation voteUpdate($postId: ID!) {
-    voteUpdate(postId: $postId){
-      errors
-    }
-  }
-`;
 
 function PostsShow({ postId }) {
-  const { data, loading, error } = useQuery(QUERY, {
+  const [comment, setComment] = React.useState('')
+  const { data, loading, error } = useQuery(SHOW_POST_QUERY, {
     variables: { postId },
   });
   const [voteUpdate, { loading: voteLoading }] = useMutation(VOTE_UPDATE, {
-    refetchQueries: [{query: QUERY, variables: {postId: postId}}],
+    refetchQueries: [{query: SHOW_POST_QUERY, variables: {postId: postId}}],
+  });
+  const [commentCreate, { loading: commentLoading }] = useMutation(COMMENT_CREATE, {
+    refetchQueries: [{query: SHOW_POST_QUERY, variables: {postId: postId}}],
   });
 
   if (loading) return 'Loading...';
@@ -57,6 +25,15 @@ function PostsShow({ postId }) {
 
   const navigateToLogin = () => {
     window.location.href = '/users/sign_in';
+  }
+
+  const handleCommentChange = (e) => {
+    setComment(e.target.value)
+  }
+
+  const sendComment = () => {
+    commentCreate({variables: {postId: postId, text: comment}})
+    setComment('')
   }
 
   const handleUpandDownVote = (post) => {
@@ -97,6 +74,14 @@ function PostsShow({ postId }) {
       </div>
       <div className="box">
         <p><strong>Comments</strong></p>
+        <input
+          id="comment"
+          value={comment}
+          name="comment"
+          disabled={commentLoading}
+          onChange={handleCommentChange}
+        />
+        <button onClick={sendComment} disabled={commentLoading || !comment} >Comment</button>
         {comments.length == 0 && (
           <p>No comments yet</p>
         )}

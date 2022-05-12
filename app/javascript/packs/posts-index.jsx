@@ -1,39 +1,15 @@
 import * as React from 'react';
-import gql from 'graphql-tag';
 import { useMutation, useQuery } from 'react-apollo';
 import renderComponent from './utils/renderComponent';
+import { POST_INDEX_QUERY } from '../graphql/query';
+import { VOTE_UPDATE } from '../graphql/mutation';
 
-const QUERY = gql`
-  query PostsPage {
-    viewer {
-      id
-    }
-    postsAll {
-      id
-      title
-      tagline
-      url
-      commentsCount
-      votesCount
-    }
-
-    viewerVotes
-  }
-`;
-
-const VOTE_UPDATE = gql`
-  mutation voteUpdate($postId: ID!) {
-    voteUpdate(postId: $postId){
-      errors
-    }
-  }
-`;
 
 
 function PostsIndex() {
-  const { data, loading, error } = useQuery(QUERY);
+  const { data, loading, error } = useQuery(POST_INDEX_QUERY);
   const [voteUpdate, { loading: voteLoading }] = useMutation(VOTE_UPDATE, {
-    refetchQueries: [{query: QUERY}],
+    refetchQueries: [{query: POST_INDEX_QUERY}],
   });
 
   if (loading) return 'Loading...';
